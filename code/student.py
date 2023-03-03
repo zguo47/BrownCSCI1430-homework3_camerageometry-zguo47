@@ -49,12 +49,30 @@ def calculate_projection_matrix(image, markers):
     ########################
     # TODO: Your code here #
     ########################
+    A = []
+    b = []
+    for im_c, wor_c in zip(points2d, points3d):
+        X_i = wor_c[0]
+        Y_i = wor_c[1]
+        Z_i = wor_c[2]
+        u_i = im_c[0]
+        v_i = im_c[1]
+        A_i = np.asarray([[X_i, Y_i, Z_i, 1, 0, 0, 0, 0, -X_i*u_i, -Y_i*u_i, -Z_i*u_i], [0, 0, 0, 0, X_i, Y_i, Z_i, 1, -X_i*v_i, -Y_i*v_i, -Z_i*v_i]])
+        b_i = np.asarray([u_i, v_i])
+        A.append(A_i)
+        b.append(b_i)
+    A = np.asarray(A).reshape(-1, 11)
+    b = np.asarray(b).flatten()
+    M = np.linalg.lstsq(A, b)[0]
+    M = np.append(M, 1).reshape(3, 4)
+    residual = np.linalg.lstsq(A, b)[1][0]
+
     # This M matrix came from a call to rand(3,4). It leads to a high residual.
-    print('Randomly setting matrix entries as a placeholder')
-    M = np.array([[0.1768, 0.7018, 0.7948, 0.4613],
-                  [0.6750, 0.3152, 0.1136, 0.0480],
-                  [0.1020, 0.1725, 0.7244, 0.9932]])
-    residual = 7 # Arbitrary stencil code initial value
+    # print('Randomly setting matrix entries as a placeholder')
+    # M = np.array([[0.1768, 0.7018, 0.7948, 0.4613],
+    #               [0.6750, 0.3152, 0.1136, 0.0480],
+    #               [0.1020, 0.1725, 0.7244, 0.9932]])
+    # residual = 7 # Arbitrary stencil code initial value
 
     return M, residual
 
