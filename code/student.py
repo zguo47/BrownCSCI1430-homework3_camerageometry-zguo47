@@ -131,6 +131,7 @@ def estimate_fundamental_matrix(points1, points2):
     ########################
     # TODO: Your code here #
     ########################
+    # best_inlier_residual = abs(np.transpose(np.asarray(expanded_matches_b))@best_Fmatrix@np.asarray(expanded_matches_a))
 
     # Arbitrary intentionally incorrect Fundamental matrix placeholder
     F_matrix = np.array([[0, 0, -.0004], [0, 0, .0032], [0, -0.0044, .1034]])
@@ -163,13 +164,47 @@ def ransac_fundamental_matrix(matches1, matches2, num_iters):
     ########################
     # TODO: Your code here #
     ########################
-
-    # Your RANSAC loop should contain a call to your 'estimate_fundamental_matrix()'
-
     best_Fmatrix = estimate_fundamental_matrix(matches1[0:9, :], matches2[0:9, :])
     best_inliers_a = matches1[0:29, :]
     best_inliers_b = matches2[0:29, :]
-    best_inlier_residual = 5 # Arbitrary stencil code initial value
+    best_inlier_residual = 5
+    max_inliers = 0
+    threshold = 0.003
+    for i in range(num_iters):
+        inliers = []
+        inlier_residual = []
+        p = np.random.permutation(len(matches1))
+        matches1_subset = matches1[p][:9]
+        matches2_subset = matches2[p][:9]
+
+        F_matrix, _ = cv2.findFundamentalMat(matches1_subset, matches2_subset, cv2.FM_8POINT, 1e10, 0, 1)
+        expanded_matches_a = []
+        expanded_matches_b = []
+        for j in range(matches1.shape[0]):
+            ma = np.asarray([matches1[j][0], matches1[j][1], 1])
+            mb = np.asarray([matches2[j][0], matches2[j][1], 1])
+            expanded_matches_a.append(ma)
+            expanded_matches_b.append(mb)
+            distance = np.sum(abs(np.transpose(mb)@F_matrix@ma)**2)**(1/2)
+            residual = abs(np.transpose(mb)@F_matrix@ma)
+            inlier_residual.append(residual)
+            if distance <= threshold:
+                inliers.append([j])
+        if len(inliers) > max_inliers:
+            max_inliers = len(inliers)
+            best_Fmatrix = F_matrix
+            best_inliers_a = np.squeeze(matches1[inliers,:])
+            best_inliers_b = np.squeeze(matches2[inliers,:])
+            best_inlier_residual = min(inlier_residual)
+
+    print(best_inlier_residual)
+
+    # Your RANSAC loop should contain a call to your 'estimate_fundamental_matrix()'
+
+    # best_Fmatrix = estimate_fundamental_matrix(matches1[0:9, :], matches2[0:9, :])
+    # best_inliers_a = matches1[0:29, :]
+    # best_inliers_b = matches2[0:29, :]
+    # best_inlier_residual = 5 # Arbitrary stencil code initial value
 
     # For your report, we ask you to visualize RANSAC's 
     # convergence over iterations. 

@@ -75,7 +75,7 @@ def main():
     for i in range(len(images) - 1):
         image1 = images[i]
         M1 = Ms[i]
-        image2 = images[i + 1]
+        image2 = images[i + 1] 
         M2 = Ms[i + 1]
 
         print(f'Getting matches for images {i + 1} and {i + 2} of {len(images)}...')
