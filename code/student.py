@@ -143,6 +143,10 @@ def estimate_fundamental_matrix(points1, points2):
     v2 = points2[:, 1]
     A = np.array([u*u2, v*u2, u2, u*v2, v*v2, v2, u, v, np.ones(u.shape)])
     U, S, V = np.linalg.svd(A, full_matrices=False)
+    print(A.shape)
+    print(U.shape)
+    print(S.shape)
+    print(V.shape)
     F_matrix = U@S@np.transpose(V)
     F_matrix = F_matrix.reshape(3, 3)
     points1 = np.hstack((points1, np.ones(points1.shape[0]).reshape(-1, 1)))
@@ -189,7 +193,7 @@ def ransac_fundamental_matrix(matches1, matches2, num_iters):
         matches1_subset = matches1[p][:9]
         matches2_subset = matches2[p][:9]
 
-        F_matrix, _ = cv2.findFundamentalMat(matches1_subset, matches2_subset, cv2.FM_8POINT, 1e10, 0, 1)
+        F_matrix, _ = estimate_fundamental_matrix(matches1_subset, matches2_subset)
         expanded_matches_a = []
         expanded_matches_b = []
         for j in range(matches1.shape[0]):
