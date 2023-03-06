@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from matplotlib.widgets import Slider, Button
+import math
 
 # Initial random matrices
 initial_intrinsic_matrix_to_replace = np.random.rand(3,3)
@@ -40,6 +41,13 @@ def calculate_camera_matrix(tx, ty, tz, alpha, beta, gamma, fx, fy, skew, u, v):
     # Hint: Calculate the rotation matrices for the x, y, and z axes separately.
     # Then multiply them to get the rotational part of the extrinsic matrix.
     ########################
+    initial_intrinsic_matrix_to_replace = np.asarray([[fx, skew, u], [0, fy, v], [0, 0, 1]])
+    R_x = np.asarray([[1, 0, 0], [0, math.cos(alpha), -math.sin(alpha)], [0, math.sin(alpha), math.cos(alpha)]])
+    R_y = np.asarray([[math.cos(beta), 0, math.sin(beta)], [0, 1, 0], [-math.sin(beta), 0, math.cos(beta)]])
+    R_z = np.asarray([[math.cos(gamma), -math.sin(gamma), 0], [math.sin(gamma), math.cos(gamma), 0], [0, 0, 1]])
+    R = R_x @ R_y @ R_z
+    initial_extrinsic_matrix_to_replace = np.hstack((R, np.asarray([[tx], [ty], [tz]])))
+    initial_camera_matrix_to_replace = initial_intrinsic_matrix_to_replace @ initial_extrinsic_matrix_to_replace
     return initial_camera_matrix_to_replace, initial_intrinsic_matrix_to_replace, initial_extrinsic_matrix_to_replace
 
 def find_coords(camera_matrix):

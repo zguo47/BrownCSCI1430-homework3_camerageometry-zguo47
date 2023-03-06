@@ -155,6 +155,9 @@ def estimate_fundamental_matrix(points1, points2):
     residual = np.trace(np.abs(points2@F_matrix@np.transpose(points1)))
     return F_matrix, residual
 
+inlier_counts = []
+inlier_residuals = []
+
 def ransac_fundamental_matrix(matches1, matches2, num_iters):
     """
     Implement RANSAC to find the best fundamental matrix robustly
@@ -193,7 +196,7 @@ def ransac_fundamental_matrix(matches1, matches2, num_iters):
         matches1_subset = matches1[p][:8]
         matches2_subset = matches2[p][:8]
 
-        F_matrix, _ = estimate_fundamental_matrix(matches1_subset, matches2_subset)
+        F_matrix, res = estimate_fundamental_matrix(matches1_subset, matches2_subset)
         expanded_matches_a = []
         expanded_matches_b = []
         for j in range(matches1.shape[0]):
@@ -202,16 +205,16 @@ def ransac_fundamental_matrix(matches1, matches2, num_iters):
             expanded_matches_a.append(ma)
             expanded_matches_b.append(mb)
             distance = np.sum(abs(np.transpose(mb)@F_matrix@ma)**2)**(1/2)
-            residual = abs(np.transpose(mb)@F_matrix@ma)
-            inlier_residual.append(residual)
             if distance <= threshold:
                 inliers.append([j])
+        inlier_counts.append([len(inliers)])
+        inlier_residuals.append([res])
         if len(inliers) > max_inliers:
             max_inliers = len(inliers)
             best_Fmatrix = F_matrix
             best_inliers_a = np.squeeze(matches1[inliers,:])
             best_inliers_b = np.squeeze(matches2[inliers,:])
-            best_inlier_residual = min(inlier_residual)
+            best_inlier_residual = res
 
     # Your RANSAC loop should contain a call to your 'estimate_fundamental_matrix()'
 
