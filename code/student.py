@@ -137,6 +137,18 @@ def estimate_fundamental_matrix(points1, points2):
     F_matrix = np.array([[0, 0, -.0004], [0, 0, .0032], [0, -0.0044, .1034]])
     residual = 5 # Arbitrary stencil code initial value
 
+    u = points1[:, 0]
+    v = points1[:, 1]
+    u2 = points2[:, 0]
+    v2 = points2[:, 1]
+    A = np.array([u*u2, v*u2, u2, u*v2, v*v2, v2, u, v, np.ones(u.shape)])
+    U, S, V = np.linalg.svd(A, full_matrices=False)
+    F_matrix = U@S@np.transpose(V)
+    F_matrix = F_matrix.reshape(3, 3)
+    points1 = np.hstack((points1, np.ones(points1.shape[0]).reshape(-1, 1)))
+    points2 = np.hstack((points2, np.ones(points2.shape[0]).reshape(-1, 1)))
+    residual = np.trace(np.abs(points2@F_matrix@np.transpose(points1)))
+
     return F_matrix, residual
 
 def ransac_fundamental_matrix(matches1, matches2, num_iters):
