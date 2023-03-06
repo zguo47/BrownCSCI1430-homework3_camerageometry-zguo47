@@ -197,8 +197,6 @@ def ransac_fundamental_matrix(matches1, matches2, num_iters):
             best_inliers_b = np.squeeze(matches2[inliers,:])
             best_inlier_residual = min(inlier_residual)
 
-    print(best_inlier_residual)
-
     # Your RANSAC loop should contain a call to your 'estimate_fundamental_matrix()'
 
     # best_Fmatrix = estimate_fundamental_matrix(matches1[0:9, :], matches2[0:9, :])
@@ -235,6 +233,25 @@ def matches_to_3d(points1, points2, M1, M2):
     points3d = np.random.rand(len(points1),3)
 
     # Solve for ground truth points
+    index = 0
+    for p1, p2 in zip(points1, points2):
+        A = []
+        b = []
+        u_i = p1[0]
+        v_i = p1[1]
+        u_j = p2[0]
+        v_j = p2[1]
+        A_i = np.asarray([[M1[2][0]*u_i - M1[0][0], M1[2][1]*u_i - M1[0][1], M1[2][2]*u_i - M1[0][2]], [M1[2][0]*v_i - M1[1][0], M1[2][1]*v_i - M1[1][1], M1[2][2]*v_i - M1[1][2]], [M1[2][0], M1[2][1], M1[2][2]]])
+        A_j = np.asarray([[M2[2][0]*u_j - M2[0][0], M2[2][1]*u_j - M2[0][1], M2[2][2]*u_j - M2[0][2]], [M2[2][0]*v_j - M2[1][0], M2[2][1]*v_j - M2[1][1], M2[2][2]*v_j - M2[1][2]], [M2[2][0], M2[2][1], M2[2][2]]])
+        b_i = np.asarray([M1[0][3] - M1[2][3]*u_i, M1[1][3] - M1[2][3]*v_i, 1 - M1[2][3]])
+        b_j = np.asarray([M2[0][3] - M2[2][3]*u_j, M2[1][3] - M2[2][3]*v_j, 1 - M2[2][3]])
+        A.append(A_i)
+        A.append(A_j)
+        b.append(b_i)
+        b.append(b_j)
+        XYZ_i = np.linalg.lstsq(np.asarray(A).reshape(-1, 3), np.asarray(b).flatten())[0]
+        points3d[index] = XYZ_i
+        index += 1
 
     ########################
 
